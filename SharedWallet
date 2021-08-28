@@ -1,0 +1,37 @@
+pragma solidity ^0.8.0;
+
+contract SharedWallet{
+    address owner;
+    mapping(address => uint) public allowanceReceived;
+    string public a;
+    
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function getBalance() public view returns (uint){
+        return address(this).balance;
+    }
+    
+    function depositMoneyToAccount() public payable{
+        allowanceReceived[owner] = address(this).balance;
+        a = 'v';
+    }
+    
+    receive() external payable {
+        depositMoneyToAccount();
+    }
+
+    function setAllowance(address _addressToLimit, uint _amountToLimit) public {
+        require(msg.sender == owner, "access denied");
+        allowanceReceived[_addressToLimit] = _amountToLimit;
+    }
+    
+    function withdrawMoney(address payable _to, uint _amountToWithdraw) public{
+        require(_amountToWithdraw <= allowanceReceived[_to], "not allowed");
+        require(_amountToWithdraw <= address(this).balance, "not enough money");
+        allowanceReceived[_to] -= _amountToWithdraw;
+        _to.transfer(_amountToWithdraw);
+    }
+    
+}
